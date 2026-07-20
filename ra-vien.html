@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khoa Xạ tổng hợp — Ra viện / Chuyển khoa</title>
+<style>
+  :root{
+    --bg:#f4f6f9; --card:#fff; --line:#e3e8ef; --text:#1f2a37; --muted:#6b7280;
+    --primary:#1e6fd9; --primary-soft:#e8f1fd; --today:#0e9f6e; --today-soft:#e3f6ee;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+  header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 18px;position:sticky;top:0;z-index:10}
+  header h1{font-size:18px;margin:0;font-weight:700}
+  header h1 .k{color:var(--primary)}
+  .sub{color:var(--muted);font-size:13px;margin-top:6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .sub input{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;min-width:170px}
+  .sub button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13px}
+  .sub button:hover{background:var(--primary-soft);border-color:var(--primary)}
+  main{max-width:1300px;margin:0 auto;padding:16px 18px 60px}
+  .daygroup{margin-bottom:22px}
+  .dayhead{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;font-size:15px;font-weight:700}
+  .dayhead .cnt{color:var(--muted);font-weight:500;font-size:13px}
+  .dayhead.today{color:var(--today)}
+  .scroll{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+  .scroll.today{border-color:var(--today);box-shadow:0 0 0 3px var(--today-soft)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;white-space:nowrap}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.02em;background:#fafbfc;position:sticky;top:0}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#fafbff}
+  td.stt{color:var(--muted);text-align:center}
+  .name{font-weight:600;white-space:normal;min-width:150px}
+  .room{display:inline-block;background:var(--primary-soft);color:var(--primary);border-radius:6px;padding:2px 8px;font-weight:600}
+  .mota{white-space:normal;min-width:200px}
+  .clip{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help}
+  .empty{color:var(--muted);padding:12px 14px;font-style:italic}
+  .noresult{text-align:center;color:var(--muted);padding:40px 20px}
+  .err{background:#fdeaea;border:1px solid #f5b5b5;color:#a11;border-radius:10px;padding:14px;margin-bottom:16px}
+  @media print{
+    header .sub{display:none} .scroll{overflow:visible;box-shadow:none;border:1px solid #ccc}
+    table{white-space:normal} .clip{max-width:none;white-space:normal}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏥 Khoa <span class="k">Xạ tổng hợp</span> — Ra viện / Chuyển khoa</h1>
+  <div class="sub">
+    <span id="window"></span>
+    <input id="search" placeholder="🔍 Tìm tên / phòng / bác sĩ…" oninput="render()">
+    <span id="updated"></span>
+    <button onclick="load()">🔄 Làm mới</button>
+    <button onclick="window.print()">🖨️ In</button>
+  </div>
+</header>
+
+<main id="app"><div class="noresult">Đang tải dữ liệu…</div></main>
+
+<script>
+/* ===== CONFIG ===== */
+const SHEET_ID  = "12AMpZN7SX_Bn-i6Cpocmpph9fnD01tPaoVmCeRp13NU";
+const SHEET_GID = "0";
+const WORKING_DAYS = 5;   // hôm nay + 4 ngày làm việc
+const WEEKEND = [0,6];    // 0=CN, 6=T7 (bỏ 6 nếu làm cả sáng T7)
+
+// Tên cột trong Sheet -> đổi bên phải cho khớp nếu Sheet đổi tên
+const COL = {
+  ma:         "Title",
+  ten:        "Họ tên BN",
+  phong:      "Phòng",
+  bacsi:      "Bác sĩ điều trị",
+  mota:       "Mô tả RV-CK",
+  khoachuyen: "Khoa chuyển đến",
+  chandoan:   "Chẩn đoán",
+  nhom:       "Nhóm bệnh",
+  sdt:        "Số điện thoại",
+  hoso:       "Hồ sơ",
+  note:       "Note điều trị",
+  ngay:       "RV - CK"
+};
+
+/* ===== Helpers ===== */
+const WD=["Chủ nhật","Thứ Hai","Thứ Ba","Thứ Tư","Thứ Năm","Thứ Sáu","Thứ Bảy"];
+const key=d=>d.toISOString().slice(0,10);
+const isWeekend=d=>WEEKEND.includes(d.getDay());
+function parseDMY(s){
+  if(!s)return null;
+  const m=s.trim().match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if(!m)return null;
+  const d=new Date(+m[3],+m[2]-1,+m[1]); return isNaN(d)?null:d;
+}
+function buildWindow(){
+  const out=[]; const cur=new Date(); cur.setHours(0,0,0,0);
+  while(out.length<WORKING_DAYS){ if(!isWeekend(cur))out.push(new Date(cur)); cur.setDate(cur.getDate()+1); }
+  return out;
+}
+function esc(s){return(s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+// Lấy text từ 1 ô gviz (ưu tiên giá trị đã format .f)
+function cellText(cell){
+  if(cell==null) return "";
+  if(cell.f!=null) return String(cell.f);
+  if(cell.v==null) return "";
+  return String(cell.v);
+}
+// Parse ngày: hỗ trợ "DD/MM/YYYY" và định dạng gviz "Date(2026,6,24)"
+function parseAnyDate(s){
+  if(!s) return null;
+  const g=s.match(/^Date\((\d+),(\d+),(\d+)/);
+  if(g){ const d=new Date(+g[1],+g[2],+g[3]); return isNaN(d)?null:d; }
+  return parseDMY(s);
+}
+
+/* ===== State ===== */
+let DATA=[], WIN=[];
+
+// Đọc Google Sheet bằng JSONP (không bị chặn CORS, chạy cả file:// lẫn https)
+function load(){
+  const app=document.getElementById("app");
+  app.innerHTML='<div class="noresult">Đang tải dữ liệu…</div>';
+  const cb="gviz_cb_"+Date.now();
+  const s=document.createElement("script");
+  const timer=setTimeout(()=>{ fail(); }, 15000);
+  function done(){ clearTimeout(timer); try{delete window[cb];}catch(e){window[cb]=undefined;} s.remove(); }
+  function fail(){ done(); app.innerHTML='<div class="err">Không đọc được Google Sheet.<br>Kiểm tra: Sheet đã bật <b>Chia sẻ → Bất kỳ ai có liên kết (Người xem)</b> và có kết nối Internet.</div>'; }
+  window[cb]=function(resp){
+    done();
+    try{
+      const cols=resp.table.cols.map(c=>(c.label||"").trim());
+      const idx={}; for(const k in COL) idx[k]=cols.indexOf(COL[k]);
+      DATA=resp.table.rows.map(r=>{
+        const o={}; for(const k in COL){ o[k]= idx[k]>=0 ? cellText(r.c[idx[k]]).trim() : ""; } return o;
+      });
+      afterLoad();
+    }catch(e){ fail(); }
+  };
+  s.onerror=fail;
+  s.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${SHEET_GID}&tqx=out:json;responseHandler:${cb}`;
+  document.body.appendChild(s);
+}
+
+function afterLoad(){
+  const app=document.getElementById("app");
+  WIN=buildWindow();
+  document.getElementById("window").textContent=
+    `📅 ${WIN[0].getDate()}/${WIN[0].getMonth()+1} → ${WIN.at(-1).getDate()}/${WIN.at(-1).getMonth()+1} (${WORKING_DAYS} ngày làm việc)`;
+  document.getElementById("updated").textContent="· "+new Date().toLocaleTimeString("vi-VN");
+  render();
+}
+
+function render(){
+  const app=document.getElementById("app");
+  const kw=(document.getElementById("search").value||"").toLowerCase().trim();
+  const winKeys=WIN.map(key);
+  const byDay={}; winKeys.forEach(k=>byDay[k]=[]);
+  let total=0;
+  DATA.forEach(r=>{
+    const d=parseAnyDate(r.ngay); if(!d)return;
+    const k=key(d); if(!(k in byDay))return;
+    if(kw && !(`${r.ten} ${r.phong} ${r.bacsi} ${r.mota} ${r.ma}`.toLowerCase().includes(kw)))return;
+    byDay[k].push(r); total++;
+  });
+
+  if(total===0){
+    app.innerHTML=`<div class="noresult">Không có bệnh nhân ra viện / chuyển khoa trong khoảng này${kw?" khớp từ khoá":""}.</div>`;
+    return;
+  }
+
+  const todayK=winKeys[0];
+  const cols=["Mã BN","Phòng","Bác sĩ ĐT","Mô tả RV–CK","Khoa chuyển đến","Chẩn đoán","Nhóm bệnh","SĐT","Hồ sơ","Ghi chú ĐT"];
+  app.innerHTML=WIN.map(d=>{
+    const k=key(d), list=byDay[k], isToday=(k===todayK);
+    const label=(isToday?"Hôm nay · ":"")+WD[d.getDay()]+" "+d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear();
+    if(!list.length) return `<div class="daygroup">
+        <div class="dayhead ${isToday?'today':''}">${label}<span class="cnt">0 BN</span></div>
+        <div class="scroll ${isToday?'today':''}"><div class="empty">Không có bệnh nhân</div></div></div>`;
+    const head=`<tr><th>Tên bệnh nhân</th><th>Phòng</th><th>Bác sĩ ĐT</th><th>Mô tả RV–CK</th></tr>`;
+    const body=list.map((r)=>`<tr>
+      <td class="name">${esc(r.ten)}</td>
+      <td>${r.phong?`<span class="room">${esc(r.phong)}</span>`:"—"}</td>
+      <td>${esc(r.bacsi)||"—"}</td>
+      <td class="mota">${esc(r.mota)||"—"}</td>
+    </tr>`).join("");
+    return `<div class="daygroup">
+      <div class="dayhead ${isToday?'today':''}">${label}<span class="cnt">${list.length} BN</span></div>
+      <div class="scroll ${isToday?'today':''}"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>
+    </div>`;
+  }).join("");
+}
+
+load();
+setInterval(load,5*60*1000);
+</script>
+</body>
+</html>
