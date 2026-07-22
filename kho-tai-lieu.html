@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kho tài liệu — Khoa Xạ tổng hợp</title>
+<style>
+  :root{--bg:#f4f6f9;--card:#fff;--line:#e3e8ef;--text:#1f2a37;--muted:#6b7280;--primary:#1e6fd9;--primary-soft:#e8f1fd}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+  header{background:var(--card);border-bottom:1px solid var(--line);padding:16px 18px;position:sticky;top:0;z-index:5}
+  header h1{margin:0;font-size:19px}
+  header h1 .k{color:var(--primary)}
+  .tools{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .tools input{flex:1;min-width:180px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-size:15px}
+  .chip{display:inline-block;background:var(--primary-soft);color:var(--primary);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600}
+  .chip a{color:var(--primary);text-decoration:none;margin-left:6px;font-weight:700}
+  main{max-width:820px;margin:0 auto;padding:16px 16px 60px}
+  .grp{margin-bottom:22px}
+  .grp h2{font-size:16px;margin:0 0 10px;color:#111;display:flex;align-items:center;gap:8px}
+  .grp h2 .cnt{color:var(--muted);font-weight:500;font-size:13px}
+  .doc{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;text-decoration:none;color:inherit}
+  .doc:hover{border-color:var(--primary);box-shadow:0 1px 6px rgba(30,111,217,.12)}
+  .doc .ico{font-size:22px;flex:0 0 auto}
+  .doc .m{flex:1;min-width:0}
+  .doc .t{font-weight:600}
+  .doc .s{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .badge{font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px;background:#eef2f7;color:#475569;flex:0 0 auto}
+  .open{color:var(--primary);font-weight:700;flex:0 0 auto;font-size:13px}
+  .empty{text-align:center;color:var(--muted);padding:40px 20px}
+  .note{background:#fffbe6;border:1px dashed #e0c14a;border-radius:8px;padding:10px 14px;font-size:13px;color:#7a5c00;margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📚 Kho tài liệu <span class="k">Khoa Xạ tổng hợp</span></h1>
+  <div class="tools">
+    <input id="q" placeholder="🔍 Tìm tài liệu…" oninput="render()">
+    <span id="filterChip"></span>
+  </div>
+</header>
+
+<main id="app"><div class="empty">Đang tải…</div></main>
+
+<script>
+/* ============================================================
+   CẤU HÌNH
+   - Khi đã tạo Sheet "Tài liệu" (công khai), dán ID vào TAILIEU_SHEET_ID.
+   - Cột trong Sheet: Tên tài liệu | Mặt bệnh | Loại | Link
+   - Chưa có Sheet thì trang dùng DEMO bên dưới.
+   ============================================================ */
+const TAILIEU_SHEET_ID = "10pXgU9AYVQvXXSs0o8Wu-IVT1NeJaKDqD0JWYrmcwKQ";   // dán ID hoặc cả link đều được
+const TAILIEU_TAB      = "Tài liệu";
+
+// Dữ liệu mẫu (thay bằng link Drive thật; hoặc chuyển sang dùng Sheet ở trên)
+const DEMO = [
+  {ten:"Hướng dẫn xạ trị vùng đầu cổ", mb:"Đầu cổ", loai:"Hướng dẫn", link:"https://drive.google.com/file/d/1L_YYBjjBb8JUug_1Fo87xNV_cq02nObn/view"},
+  {ten:"Chăm sóc da – niêm mạc miệng khi xạ đầu cổ", mb:"Đầu cổ", loai:"Chăm sóc", link:"https://drive.google.com/file/d/1_pE8P7-h1LNc4Ynn0wd9ubE7p5kMxdvz/view"},
+  {ten:"Bài tập vận động vùng cổ", mb:"Đầu cổ", loai:"Bài tập", link:"https://drive.google.com/file/d/1lzqlIeTrHxaSA0bXYWRaK8TF9ALCR-AV/view"},
+
+  {ten:"Hướng dẫn xạ trị bổ trợ ung thư vú", mb:"Vú", loai:"Hướng dẫn", link:"https://drive.google.com/file/d/1jmEVqz0TSCF162-dApWZDMXLMt--NaLZ/view"},
+
+  {ten:"Hướng dẫn xạ trị UT cổ tử cung – nội mạc tử cung", mb:"Phụ khoa", loai:"Hướng dẫn", link:"https://drive.google.com/file/d/1w2MmfAimCTNjGsvF_qvhwd3mbmgc_2JL/view"},
+  {ten:"Chăm sóc da khi xạ trị vùng chậu", mb:"Phụ khoa", loai:"Chăm sóc", link:"https://drive.google.com/file/d/1RN7BhGvlihvpB3-DGKNE2yV5qAGxbLcd/view"},
+
+  {ten:"Hướng dẫn xạ trị ung thư trực tràng", mb:"Trực tràng", loai:"Hướng dẫn", link:"https://drive.google.com/file/d/1nakoToWVuFVm72J-3bqUNNEwLuUZMijA/view"},
+  {ten:"Chăm sóc da khi xạ trị vùng chậu", mb:"Trực tràng", loai:"Chăm sóc", link:"https://drive.google.com/file/d/1RN7BhGvlihvpB3-DGKNE2yV5qAGxbLcd/view"},
+  {ten:"Chăm sóc hậu môn nhân tạo (HMNT)", mb:"Trực tràng", loai:"Chăm sóc", link:"https://drive.google.com/file/d/1Dtr0_txaagtzoh150hiO8kkPf6mN8L6G/view"},
+
+  {ten:"Hướng dẫn xạ trị ung thư thực quản", mb:"Thực quản", loai:"Hướng dẫn", link:"https://drive.google.com/file/d/1qcSDaXXJpVQVYUwSn2h7g0EYoJkgAeHa/view"},
+  {ten:"Chăm sóc ống sonde dạ dày", mb:"Thực quản", loai:"Chăm sóc", link:"https://drive.google.com/file/d/1GnMG5XtSasmUsb5Rn4HhmkrEL-32Tcci/view"},
+
+  {ten:"Lưu ý khi xạ trị vùng lồng ngực", mb:"Phổi", loai:"Hướng dẫn", link:"https://drive.google.com/file/d/1_a25qPqwQ4z95Z1h4vnVv4e8AQisS8Rc/view"},
+  {ten:"Tập thở cho bệnh nhân xạ trị ung thư phổi", mb:"Phổi", loai:"Bài tập", link:"https://drive.google.com/file/d/1sCMpZ4lhAx7ySF0dymUXtlDACdWuRuX4/view"},
+
+  {ten:"Sổ tay xạ trị", mb:"Chung", loai:"Sổ tay", link:"https://drive.google.com/file/d/1Le0T_-FHd6fTcyMneyazgdGu38Pz8_IX/view"}
+];
+
+/* ============================================================ */
+let DATA=[];
+function slug(s){return (s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");}
+function esc(s){return(s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function mergeDocs(a,b){const key=d=>slug(d.ten)+"|"+slug(d.mb);const seen=new Set(a.map(key));const out=a.slice();b.forEach(d=>{if(!seen.has(key(d)))out.push(d);});return out;}
+function param(k){return new URLSearchParams(location.search).get(k)||"";}
+const ICON={"Hướng dẫn":"📄","Chăm sóc":"🩹","Bài tập":"🤸","Sổ tay":"📘","Hỏi đáp":"❓"};
+
+function parseCSV(text){
+  const rows=[];let row=[],cur="",q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}
+    else{if(c==='"')q=true;else if(c===','){row.push(cur);cur="";}
+      else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur="";}else if(c!=='\r')cur+=c;}}
+  if(cur!==""||row.length){row.push(cur);rows.push(row);}
+  const h=rows.shift().map(x=>x.trim());
+  const iT=h.indexOf("Tên tài liệu"), iM=h.indexOf("Mặt bệnh"), iL=h.indexOf("Loại"), iK=h.indexOf("Link");
+  return rows.filter(r=>r.some(x=>x&&x.trim())).map(r=>({
+    ten:(r[iT]||"").trim(), mb:(r[iM]||"").trim(), loai:(r[iL]||"").trim()||"Hướng dẫn", link:(r[iK]||"").trim()||"#"
+  }));
+}
+
+function sheetId(s){var m=String(s||"").match(/\/d\/([a-zA-Z0-9_-]+)/);return m?m[1]:String(s||"").trim();}
+function cellF(c){ if(!c) return ""; return String(c.f!=null?c.f:(c.v!=null?c.v:"")).trim(); }
+// Đọc Google Sheet bằng JSONP (chạy cả file:// lẫn https, không bị chặn CORS)
+function load(){
+  const id=sheetId(TAILIEU_SHEET_ID);
+  if(!id){ DATA=DEMO.slice(); render(); return; }
+  const cb="kho_cb_"+Date.now();
+  const s=document.createElement("script");
+  const timer=setTimeout(function(){ done(); DATA=DEMO.slice(); render(); }, 12000);
+  function done(){ clearTimeout(timer); try{delete window[cb];}catch(e){window[cb]=undefined;} s.remove(); }
+  window[cb]=function(resp){
+    done();
+    try{
+      const cols=resp.table.cols.map(c=>(c.label||"").trim());
+      const iT=cols.indexOf("Tên tài liệu"), iM=cols.indexOf("Mặt bệnh"), iL=cols.indexOf("Loại"), iK=cols.indexOf("Link");
+      const rows=resp.table.rows.map(function(r){
+        return { ten:cellF(r.c[iT]), mb:cellF(r.c[iM]), loai:cellF(r.c[iL])||"Hướng dẫn", link:cellF(r.c[iK])||"#" };
+      }).filter(d=>d.ten);
+      DATA = mergeDocs(rows, DEMO);
+    }catch(e){ DATA=DEMO.slice(); }
+    render();
+  };
+  s.onerror=function(){ done(); DATA=DEMO.slice(); render(); };
+  s.src=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;responseHandler:${cb}`;
+  document.body.appendChild(s);
+}
+
+function render(){
+  const app=document.getElementById("app");
+  const kw=(document.getElementById("q").value||"").toLowerCase().trim();
+  const mb=param("mb");   // slug mặt bệnh từ QR
+  const chip=document.getElementById("filterChip");
+
+  let list=DATA.slice();
+  let mbName="";
+  if(mb){ list=list.filter(d=>slug(d.mb)===mb); mbName=(list[0]&&list[0].mb)|| mb; }
+  if(kw) list=list.filter(d=>(`${d.ten} ${d.mb} ${d.loai}`).toLowerCase().includes(kw));
+
+  chip.innerHTML = mb ? `<span class="chip">Mặt bệnh: ${esc(mbName)} <a href="?">✕ tất cả</a></span>` : "";
+
+  if(!DEMO.length || !list.length){ app.innerHTML=`<div class="empty">Không có tài liệu${kw?" khớp từ khoá":""}.</div>`; return; }
+
+  const demoNote = (!TAILIEU_SHEET_ID)
+    ? `<div class="note">⚠️ Đang hiển thị danh sách MẪU. Để dùng thật: tạo Sheet "Tài liệu" (công khai), dán link Drive vào cột Link, rồi điền ID Sheet vào <b>TAILIEU_SHEET_ID</b> ở đầu file.</div>` : "";
+
+  // gom theo mặt bệnh
+  const order=["Đầu cổ","Vú","Phụ khoa","Trực tràng","Thực quản","Phổi","Chung"];
+  const groups={}; list.forEach(d=>{(groups[d.mb]=groups[d.mb]||[]).push(d);});
+  const keys=Object.keys(groups).sort((a,b)=>{const ia=order.indexOf(a),ib=order.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib);});
+
+  app.innerHTML = demoNote + keys.map(g=>`
+    <div class="grp">
+      <h2>🩺 ${esc(g)} <span class="cnt">${groups[g].length} tài liệu</span></h2>
+      ${groups[g].map(d=>`
+        <a class="doc" href="${esc(d.link)}" target="_blank" rel="noopener">
+          <span class="ico">${ICON[d.loai]||"📄"}</span>
+          <span class="m"><span class="t">${esc(d.ten)}</span><span class="s">${esc(d.mb)} · ${esc(d.loai)}</span></span>
+          <span class="badge">${esc(d.loai)}</span>
+          <span class="open">Mở ›</span>
+        </a>`).join("")}
+    </div>`).join("");
+}
+load();
+</script>
+</body>
+</html>

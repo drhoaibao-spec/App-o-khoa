@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phiếu giải thích điều trị — Khoa Xạ tổng hợp</title>
+<style>
+  :root{--bg:#f4f6f9;--card:#fff;--line:#e3e8ef;--text:#1f2a37;--muted:#6b7280;--primary:#1e6fd9}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+  .wrap{display:flex;gap:18px;padding:18px;max-width:1320px;margin:0 auto;align-items:flex-start}
+  .panel{flex:0 0 370px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;position:sticky;top:18px;max-height:calc(100vh - 36px);overflow:auto}
+  .panel h2{margin:0 0 12px;font-size:16px}.panel h2 .k{color:var(--primary)}
+  .fld{margin-bottom:10px;display:flex;flex-direction:column;gap:4px}
+  .fld label{font-size:12px;color:var(--muted);font-weight:600}
+  .fld input,.fld select,.fld textarea{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit}
+  .fld textarea{min-height:80px;resize:vertical;line-height:1.5}
+  .row2{display:flex;gap:8px}.row2>.fld{flex:1}
+  .hint{font-size:11px;color:var(--muted);margin:-4px 0 10px}
+  .btns{display:flex;gap:8px;margin-top:6px;position:sticky;bottom:0;background:var(--card);padding-top:8px}
+  .btns button{flex:1;padding:10px;border-radius:8px;border:1px solid var(--primary);cursor:pointer;font-weight:700}
+  .btns .print{background:var(--primary);color:#fff}.btns .reset{background:#fff;color:var(--primary)}
+  .previewArea{flex:1;min-width:0}
+  /* ---------- PHIẾU A4 ---------- */
+  .a4{background:#fff;max-width:820px;margin:0 auto;border:1px solid var(--line);border-radius:6px;padding:28px 40px 24px;font-size:14px;line-height:1.5;color:#111;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+  .hd{display:flex;justify-content:space-between;align-items:flex-start;font-size:12.5px;line-height:1.35}
+  .hd .l{text-transform:uppercase;font-weight:700}
+  .hd .r{text-align:right;color:#333}
+  .title{text-align:center;font-weight:800;font-size:20px;margin:10px 0 4px;text-transform:uppercase}
+  .subline{text-align:center;font-size:12.5px;color:#444;font-style:italic;margin-bottom:10px}
+  .pt{border:1px solid #b9b9b9;border-radius:6px;padding:9px 12px}
+  .pt div{margin:2px 0}
+  .sec{margin-top:11px}
+  .sec h3{margin:0 0 3px;font-size:14.5px;border-bottom:1.5px solid #333;padding-bottom:2px}
+  .sec .body{white-space:pre-wrap}
+  .wl{border-bottom:1px solid #999;height:21px;margin-top:5px}
+  .warn h3{color:#b00}
+  .qr{float:right;text-align:center;font-size:10.5px;color:#555;margin:0 0 8px 14px}
+  .qr img{width:108px;height:108px;display:block;border:1px solid #eee}
+  .sign{margin-top:16px;text-align:right}
+  .sign .bs{display:inline-block;text-align:center;min-width:250px}
+  .sign .space{height:44px}
+  .foot{clear:both;margin-top:16px;border-top:1px solid #bbb;padding-top:6px;text-align:center;font-size:12px;font-style:italic;color:#555}
+  @media(max-width:840px){.wrap{flex-direction:column}.panel{position:static;flex:1 1 auto;width:100%;max-height:none}}
+  @media print{
+    body{background:#fff}.panel{display:none}
+    .wrap{display:block;padding:0;max-width:none}
+    .a4{border:none;border-radius:0;box-shadow:none;max-width:none;padding:0;margin:0;font-size:13px}
+    @page{size:A4 portrait;margin:13mm}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="panel">
+    <h2>📄 Phiếu <span class="k">giải thích điều trị</span></h2>
+
+    <div class="fld"><label>Mẫu theo mặt bệnh</label>
+      <select id="mp" onchange="loadForm()"></select></div>
+    <div class="hint">Chọn mẫu để tự điền sẵn 3 phần; hoặc để "Phiếu trống" để in ra điền tay.</div>
+
+    <div class="row2">
+      <div class="fld"><label>Họ tên bệnh nhân</label><input id="ten" oninput="render()" placeholder="Trống = in dòng kẻ để điền tay"></div>
+      <div class="fld" style="flex:0 0 84px"><label>Tuổi</label><input id="tuoi" oninput="render()"></div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>Mã BN</label><input id="ma" oninput="render()"></div>
+      <div class="fld"><label>Bác sĩ điều trị</label><select id="bs" onchange="render()"></select></div>
+    </div>
+    <div class="fld"><label>Chẩn đoán</label><input id="cd" oninput="render()"></div>
+
+    <div class="fld"><label>1. Tình hình bệnh</label><textarea id="s1" oninput="render()"></textarea></div>
+    <div class="fld"><label>2. Điều trị &amp; Kế hoạch xạ (số buổi, liều…)</label><textarea id="s2" oninput="render()"></textarea></div>
+    <div class="fld"><label>3. Theo dõi &amp; Tái khám</label><textarea id="s3" oninput="render()"></textarea></div>
+    <div class="fld"><label>4. Dinh dưỡng &amp; chăm sóc (chung — sửa nếu cần)</label><textarea id="s4" oninput="render()"></textarea></div>
+
+    <div class="fld"><label>Link kho tài liệu (tạo QR — trống thì không có)</label><input id="link" oninput="render()" placeholder="https://…"></div>
+
+    <div class="btns">
+      <button class="print" onclick="window.print()">🖨️ In phiếu</button>
+      <button class="reset" onclick="resetPt()">🧹 Xóa BN</button>
+    </div>
+  </div>
+
+  <div class="previewArea"><div id="preview"></div></div>
+</div>
+
+<script>
+/* ============================================================
+   CẤU HÌNH — anh TỰ SỬA phần này
+   ============================================================ */
+const HOSPITAL_L = "BỆNH VIỆN UNG BƯỚU NGHỆ AN";
+const KHOA_L     = "KHOA XẠ TỔNG HỢP";
+const TITLE      = "PHIẾU GIẢI THÍCH ĐIỀU TRỊ";
+const FOOTER     = "Khoa Xạ tổng hợp – Bệnh viện Ung bướu Nghệ An";
+// Dán link trang Kho tài liệu (sau khi đăng GitHub) -> QR mỗi mặt bệnh tự trỏ đúng kho
+const KHO_URL    = "https://drhoaibao-spec.github.io/App-o-khoa/kho-tai-lieu.html";
+
+// Bác sĩ — THÊM TÊN vào đây (dropdown)
+const DOCTORS = [
+  {ten:"BsCK1. Nguyễn Văn Tiến", sdt:"0968.109.523"},
+  {ten:"BsCK1. .....................", sdt:"..............."}
+];
+
+// Dinh dưỡng & chăm sóc — CHUNG cho mọi mặt bệnh
+const CARE_GENERAL =
+`- Ăn đủ chất, đủ đạm (thịt, cá, trứng, sữa, đậu); chia nhỏ bữa nếu ăn kém hoặc buồn nôn.
+- Uống đủ nước 1,5–2 lít/ngày (trừ khi có chỉ định khác).
+- Hạn chế đồ cay, nhiều dầu mỡ, nhiều xơ, rượu bia, nước có gas (nhất là khi tiêu chảy).
+- Giữ da vùng xạ sạch, khô; mặc đồ cotton rộng; không chà xát, không tự bôi thuốc khi chưa hỏi bác sĩ.
+- Vệ sinh vùng chiếu xạ hằng ngày bằng nước ấm.
+- Nghỉ ngơi hợp lý, vận động nhẹ; không hút thuốc lá, hạn chế rượu bia.`;
+
+// Dấu hiệu cần báo bác sĩ ngay — CỐ ĐỊNH
+const WARNING =
+`- Sốt từ 38°C trở lên.
+- Tiêu chảy nặng hoặc có dấu hiệu mất nước.
+- Chảy máu nhiều.
+- Đau dữ dội, không kiểm soát được.
+- Không ăn uống được hoặc nôn kéo dài.
+- Da vùng xạ lở loét, chảy dịch hoặc nhiễm trùng.`;
+
+// Thông tin liên hệ hỗ trợ — CỐ ĐỊNH (sửa số điện thoại thật của khoa)
+const CONTACT =
+`- Đường dây nóng Khoa Xạ tổng hợp: ...............................
+- Giờ hành chính: liên hệ bác sĩ điều trị (SĐT ở phần chữ ký).
+- Lịch tái khám trong quá trình xạ trị: ...............................
+Chúng tôi luôn đồng hành cùng Ông/Bà trong suốt quá trình điều trị.`;
+
+// Mẫu theo mặt bệnh — pre-fill 3 phần đầu (bác sĩ sửa lại theo từng BN)
+// mb = mã mặt bệnh, dùng để nối QR về đúng kho tài liệu
+const FORMS = [
+  { ten:"— Phiếu trống (in ra điền tay) —", mb:"", s1:"", s2:"", s3:"" },
+
+  { ten:"Ung thư đầu – cổ", mb:"dau-co",
+    s1:"Ông/Bà được chẩn đoán ung thư vùng đầu – cổ. Bác sĩ đã giải thích tình trạng bệnh, giai đoạn và hướng điều trị.",
+    s2:"Phương pháp: Xạ trị IMRT/VMAT, có thể phối hợp hóa chất.\nTổng số buổi xạ trị: ......\nTổng liều xạ: ...... Gy.\nĐeo mặt nạ cố định trong mỗi buổi; giữ nguyên mốc trong suốt liệu trình.",
+    s3:"Tác dụng phụ hay gặp: khô/viêm miệng, đau rát họng, khó nuốt, khàn tiếng, viêm da vùng cổ.\nGiữ vệ sinh răng miệng, uống đủ nước, ăn mềm.\nLịch tái khám trong quá trình xạ trị: ......" },
+
+  { ten:"Ung thư vú", mb:"vu",
+    s1:"Ông/Bà được chẩn đoán ung thư vú, có chỉ định xạ trị bổ trợ. Bác sĩ đã giải thích tình trạng bệnh và mục tiêu điều trị.",
+    s2:"Phương pháp: Xạ trị bổ trợ vùng vú/thành ngực ± hạch (mô phỏng CT, đánh dấu).\nTổng số buổi xạ trị: ......\nTổng liều xạ: ...... Gy.",
+    s3:"Tác dụng phụ hay gặp: đỏ/rát/sạm da vùng xạ, mệt.\nChăm sóc da nhẹ nhàng, mặc áo cotton rộng.\nLịch tái khám trong quá trình xạ trị: ......" },
+
+  { ten:"Ung thư cổ tử cung / nội mạc tử cung", mb:"phu-khoa",
+    s1:"Ông/Bà được chẩn đoán ung thư cổ tử cung / nội mạc tử cung, có chỉ định xạ trị. Bác sĩ đã giải thích tình trạng bệnh và hướng điều trị.",
+    s2:"Phương pháp: Xạ ngoài (IMRT/VMAT) ± xạ áp sát, có thể phối hợp hóa chất.\nTổng số buổi xạ trị: ......\nTổng liều xạ: ...... Gy.",
+    s3:"Tác dụng phụ hay gặp: tiêu chảy, tiểu buốt/rắt, viêm da vùng chậu.\nGiữ vệ sinh vùng chậu, uống đủ nước.\nLịch tái khám trong quá trình xạ trị: ......" },
+
+  { ten:"Ung thư trực tràng", mb:"truc-trang",
+    s1:"Ông/Bà được chẩn đoán ung thư trực tràng, có chỉ định xạ trị. Bác sĩ đã giải thích tình trạng bệnh, giai đoạn và hướng điều trị.",
+    s2:"Phương pháp: Xạ trị IMRT/VMAT vùng chậu, thường phối hợp hóa chất.\nTổng số buổi xạ trị: ......\nTổng liều xạ: ...... Gy.",
+    s3:"Tác dụng phụ hay gặp: tiêu chảy, mót rặn, viêm trực tràng do xạ, viêm da vùng chậu.\nUống đủ nước, ăn ít xơ khi tiêu chảy, giữ vệ sinh vùng hậu môn.\nLịch tái khám trong quá trình xạ trị: ......" },
+
+  { ten:"Ung thư thực quản", mb:"thuc-quan",
+    s1:"Ông/Bà được chẩn đoán ung thư thực quản. Bác sĩ đã giải thích tình trạng bệnh, giai đoạn và hướng điều trị.",
+    s2:"Phương pháp: Xạ trị IMRT/VMAT, có thể phối hợp hóa chất.\nTổng số buổi xạ trị: ......\nTổng liều xạ: ...... Gy.\nLiệu trình: xạ các ngày trong tuần (nghỉ T7, CN), mỗi buổi 15–20 phút.",
+    s3:"Tác dụng phụ hay gặp: nuốt đau/nghẹn tăng, viêm thực quản do xạ.\nĂn mềm, chia nhỏ bữa; xét nghiệm máu trước mỗi chu kỳ hóa chất (nếu hóa–xạ đồng thời).\nLịch tái khám trong quá trình xạ trị: ......" },
+
+  { ten:"Ung thư phổi / lồng ngực", mb:"phoi",
+    s1:"Ông/Bà được chẩn đoán ung thư phổi, có chỉ định xạ trị vùng lồng ngực. Bác sĩ đã giải thích tình trạng bệnh và hướng điều trị.",
+    s2:"Phương pháp: Xạ trị IMRT/VMAT vùng lồng ngực, có thể phối hợp hóa chất.\nTổng số buổi xạ trị: ......\nTổng liều xạ: ...... Gy.\nTập thở theo hướng dẫn để phối hợp khi xạ.",
+    s3:"Tác dụng phụ hay gặp: ho, khó/đau nuốt, viêm thực quản do xạ, mệt.\nTập thở, uống đủ nước, ăn mềm.\nLịch tái khám trong quá trình xạ trị: ......" },
+
+  { ten:"Chung (mọi mặt bệnh)", mb:"chung",
+    s1:"Ông/Bà được chẩn đoán bệnh lý ung thư có chỉ định xạ trị. Bác sĩ đã giải thích tình trạng bệnh, giai đoạn và mục tiêu điều trị.",
+    s2:"Phương pháp: Xạ trị (kỹ thuật: ......), có thể phối hợp hóa chất.\nTổng số buổi xạ trị: ......\nTổng liều xạ: ...... Gy.",
+    s3:"Khám lại định kỳ theo hẹn để theo dõi đáp ứng và tác dụng phụ.\nLịch tái khám trong quá trình xạ trị: ......" }
+];
+
+/* ============================================================ */
+function esc(s){return(s||"").replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+const $=id=>document.getElementById(id);
+function lines(n){var s="";for(var i=0;i<n;i++)s+='<div class="wl"></div>';return s;}
+function sec(n,t,v,bl,cls){var body=(v&&v.trim())?'<div class="body">'+esc(v)+'</div>':lines(bl||3);
+  return '<div class="sec '+(cls||'')+'"><h3>'+n+'. '+t+'</h3>'+body+'</div>';}
+
+function init(){
+  $("mp").innerHTML=FORMS.map((f,i)=>`<option value="${i}">${esc(f.ten)}</option>`).join("");
+  $("bs").innerHTML=DOCTORS.map((d,i)=>`<option value="${i}">${esc(d.ten)}</option>`).join("");
+  $("s4").value=CARE_GENERAL;
+  loadForm();
+}
+function loadForm(){
+  const f=FORMS[+$("mp").value]||FORMS[0];
+  $("s1").value=f.s1||""; $("s2").value=f.s2||""; $("s3").value=f.s3||"";
+  if(f.s4!==undefined) $("s4").value=f.s4;
+  $("link").value = (f.mb && KHO_URL) ? (KHO_URL + (KHO_URL.indexOf("?")<0?"?":"&") + "mb=" + f.mb) : (f.link||"");
+  render();
+}
+function resetPt(){ ["ten","tuoi","ma","cd"].forEach(id=>$(id).value=""); render(); }
+
+function render(){
+  const d=DOCTORS[+$("bs").value]||DOCTORS[0];
+  const link=$("link").value.trim();
+  const dot="................................................";
+  const qr = link ? `<div class="qr"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(link)}"><div>Quét mã<br>đọc thêm</div></div>` : "";
+  $("preview").innerHTML=`<div class="a4">
+    <div class="hd">
+      <div class="l">${esc(HOSPITAL_L)}<br>${esc(KHOA_L)}</div>
+      <div class="r">Ngày ...... / ...... / ..........</div>
+    </div>
+    <div class="title">${esc(TITLE)}</div>
+    <div class="subline">Kính gửi Ông/Bà thông tin về chẩn đoán và kế hoạch điều trị — xin đọc kỹ và giữ lại để tham khảo.</div>
+    <div class="pt">
+      <div>Kính gửi Ông/Bà: <b>${esc($("ten").value)||dot}</b> &nbsp;&nbsp; Tuổi: ${esc($("tuoi").value)||"........"}</div>
+      <div>Mã số bệnh nhân: ${esc($("ma").value)||"................"}</div>
+      <div>Chẩn đoán: <b>${esc($("cd").value)||dot}</b></div>
+    </div>
+    ${qr}
+    ${sec(1,"Tình hình bệnh",$("s1").value,4)}
+    ${sec(2,"Điều trị &amp; Kế hoạch xạ trị",$("s2").value,5)}
+    ${sec(3,"Theo dõi &amp; Tái khám",$("s3").value,4)}
+    ${sec(4,"Dinh dưỡng &amp; chăm sóc",$("s4").value,4)}
+    ${sec(5,"Dấu hiệu cần báo bác sĩ ngay",WARNING,3,"warn")}
+    ${sec(6,"Thông tin liên hệ hỗ trợ",CONTACT,3)}
+    <div class="sign">
+      <div>Nghệ An, ngày ...... tháng ...... năm ......</div>
+      <div class="bs"><b>Bác sĩ điều trị</b><div class="space"></div><b>${esc(d.ten)}</b>${d.sdt?"<br>Sđt: "+esc(d.sdt):""}</div>
+    </div>
+    <div class="foot">${esc(FOOTER)}</div>
+  </div>`;
+}
+init();
+</script>
+</body>
+</html>
