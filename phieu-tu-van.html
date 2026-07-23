@@ -134,7 +134,7 @@ const SE_DAUCO =
 • Da vùng cổ – mặt: đỏ, rát, khô, bong da như cháy nắng.
 • Miệng – họng: viêm loét niêm mạc miệng, đau họng, nuốt đau, khô miệng, thay đổi vị giác.
 • Toàn thân: mệt mỏi, chán ăn, sụt cân; hóa – xạ có thể giảm bạch cầu, tiểu cầu hoặc thiếu máu.
-• Lâu dài: khô miệng kéo dài, khàn tiếng, xơ hóa mô vùng cổ.
+• Lâu dài: có thể khô miệng kéo dài, khàn tiếng, xơ hóa mô vùng cổ.
 Các tác dụng phụ này sẽ được bác sĩ theo dõi và xử trí trong quá trình điều trị.`;
 const SE_VU =
 `Tác dụng phụ thường xuất hiện từ tuần 2–3, giảm dần sau khi kết thúc xạ trị:
@@ -150,7 +150,6 @@ const SE_PHUKHOA =
 • Tiêu hóa: tiêu chảy, đau quặn bụng, mót rặn; viêm trực tràng do xạ.
 • Tiết niệu: tiểu buốt, tiểu rắt, tiểu nhiều lần, có thể tiểu máu nhẹ.
 • Toàn thân: mệt mỏi, sụt cân; hóa – xạ có thể giảm bạch cầu, tiểu cầu hoặc thiếu máu.
-• Lâu dài: xơ hóa mô, thay đổi chức năng ruột/bàng quang.
 Các tác dụng phụ này sẽ được bác sĩ theo dõi và xử trí trong quá trình điều trị.`;
 const SE_TRUCTRANG =
 `Tác dụng phụ thường xuất hiện từ tuần 2–3, giảm dần sau khi kết thúc xạ trị:
@@ -158,7 +157,6 @@ const SE_TRUCTRANG =
 • Tiêu hóa: tiêu chảy, đau quặn bụng, mót rặn; viêm trực tràng do xạ, có thể chảy máu nhẹ khi đi ngoài.
 • Tiết niệu: tiểu buốt, tiểu rắt, tiểu nhiều lần.
 • Toàn thân: mệt mỏi, sụt cân; hóa – xạ có thể giảm bạch cầu, tiểu cầu hoặc thiếu máu.
-• Lâu dài: xơ hóa mô, thay đổi chức năng ruột/bàng quang.
 Các tác dụng phụ này sẽ được bác sĩ theo dõi và xử trí trong quá trình điều trị.`;
 const SE_THUCQUAN =
 `Tác dụng phụ thường xuất hiện từ tuần 2–3, giảm dần sau khi kết thúc xạ trị:
@@ -230,25 +228,25 @@ BSCK1. Nguyễn Văn Tiến — ĐT: 0968.109.523`;
 const FORMS = [
   { ten:"— Phiếu trống (in ra điền tay) —", mb:"", s1:"", phuongphap:"Xạ trị kỹ thuật IMRT; đeo mặt nạ cố định (nếu có chỉ định)." },
   { ten:"Ung thư đầu – cổ", mb:"dau-co", se:SE_DAUCO,
-    s1:"Ông/Bà được chẩn đoán ung thư vùng đầu – cổ; bác sĩ đã giải thích tình trạng, giai đoạn và hướng điều trị.",
+    s1:"Bác được chẩn đoán ung thư vùng đầu – cổ; bác sĩ đã giải thích tình trạng, giai đoạn và hướng điều trị.",
     phuongphap:"Xạ trị kỹ thuật IMRT; đeo mặt nạ cố định (nếu có chỉ định)." },
   { ten:"Ung thư vú", mb:"vu", se:SE_VU,
-    s1:"Ông/Bà được chẩn đoán ung thư vú, có chỉ định xạ trị bổ trợ.",
+    s1:"Bác được chẩn đoán ung thư vú, có chỉ định xạ trị bổ trợ.",
     phuongphap:"Xạ trị kỹ thuật IMRT; đeo mặt nạ cố định (nếu có chỉ định)." },
   { ten:"UT cổ tử cung / nội mạc tử cung", mb:"phu-khoa", se:SE_PHUKHOA,
-    s1:"Ông/Bà được chẩn đoán ung thư cổ tử cung / nội mạc tử cung, có chỉ định xạ trị.",
+    s1:"Bác được chẩn đoán ung thư cổ tử cung / nội mạc tử cung, có chỉ định xạ trị.",
     phuongphap:"Xạ trị kỹ thuật IMRT; đeo mặt nạ cố định (nếu có chỉ định)." },
   { ten:"Ung thư trực tràng", mb:"truc-trang", se:SE_TRUCTRANG,
-    s1:"Ông/Bà được chẩn đoán ung thư trực tràng, có chỉ định xạ trị.",
+    s1:"Bác được chẩn đoán ung thư trực tràng, có chỉ định xạ trị.",
     phuongphap:"Xạ trị kỹ thuật IMRT; đeo mặt nạ cố định (nếu có chỉ định)." },
   { ten:"Ung thư thực quản", mb:"thuc-quan", se:SE_THUCQUAN,
-    s1:"Ông/Bà được chẩn đoán ung thư thực quản; bác sĩ đã giải thích tình trạng và hướng điều trị.",
+    s1:"Bác được chẩn đoán ung thư thực quản; bác sĩ đã giải thích tình trạng và hướng điều trị.",
     phuongphap:"Xạ trị kỹ thuật IMRT; đeo mặt nạ cố định (nếu có chỉ định)." },
   { ten:"Ung thư phổi / lồng ngực", mb:"phoi", se:SE_PHOI,
-    s1:"Ông/Bà được chẩn đoán ung thư phổi, có chỉ định xạ trị vùng lồng ngực.",
+    s1:"Bác được chẩn đoán ung thư phổi, có chỉ định xạ trị vùng lồng ngực.",
     phuongphap:"Xạ trị kỹ thuật IMRT; đeo mặt nạ cố định (nếu có chỉ định)." },
   { ten:"Chung (mọi mặt bệnh)", mb:"chung",
-    s1:"Ông/Bà được chẩn đoán bệnh lý ung thư có chỉ định xạ trị; bác sĩ đã giải thích tình trạng và mục tiêu điều trị.",
+    s1:"Bác được chẩn đoán bệnh lý ung thư có chỉ định xạ trị; bác sĩ đã giải thích tình trạng và mục tiêu điều trị.",
     phuongphap:"Xạ trị kỹ thuật IMRT; đeo mặt nạ cố định (nếu có chỉ định)." }
 ];
 
