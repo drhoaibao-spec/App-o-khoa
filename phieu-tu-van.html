@@ -127,7 +127,7 @@ const SIDE_EFFECTS =
 • Hô hấp: ho, có thể viêm phổi do xạ (khi xạ vùng ngực).
 • Tiết niệu: tiểu buốt, tiểu rắt, tiểu nhiều lần; có thể tiểu máu nhẹ.
 • Toàn thân: mệt mỏi, giảm cân; hóa – xạ có thể gây giảm bạch cầu, tiểu cầu hoặc thiếu máu.
-• Lâu dài: rối loạn cương ở nam, xơ hóa mô, thay đổi chức năng ruột/bàng quang.
+• Lâu dài: xơ hóa mô vùng xạ.
 Các tác dụng phụ này sẽ được bác sĩ theo dõi và xử trí trong quá trình điều trị.`;
 const SE_DAUCO =
 `Tác dụng phụ thường xuất hiện từ tuần 2–3, giảm dần sau khi kết thúc xạ trị:
@@ -219,10 +219,17 @@ const CARE_GENERAL =
 - Nếu hóa – xạ đồng thời: hạn chế nơi đông người, vệ sinh tay, ăn chín uống sôi.
 - Không hút thuốc lá, không uống rượu bia.`;
 
-// Thông tin liên hệ — Team BS Hoàng · Tiến
-const CONTACT =
-`TS.BS Nguyễn Hải Hoàng — ĐT: 0975.309.329
-BSCK1. Nguyễn Văn Tiến — ĐT: 0968.109.523`;
+// Thông tin liên hệ — thay đổi theo Bác sĩ điều trị
+const HOANG_LINE = "TS.BS Nguyễn Hải Hoàng — ĐT: 0975.309.329";
+const CONTACTS = {
+  "BS Hoàng - Tiến":  [HOANG_LINE, "BSCK1. Nguyễn Văn Tiến — ĐT: 0968.109.523"],
+  "BS Nga":           [HOANG_LINE, "BSCK1. Nguyễn Thị Nga — ĐT: 0976.238.967"],
+  "BS Hoàng - Dương": [HOANG_LINE, "BSCK1. Vũ Đình Dương — ĐT: 0966.933.945"],
+  "BS Công - Nhung":  ["ThS.BS Nguyễn Văn Công — ĐT: 0988.120.151", "BS. Phạm Thị Nhung — ĐT: 0374.214.750"],
+  "BS Lâm":           ["BSCK1. Lê Sỹ Lâm — ĐT: 0978.909.290"]
+};
+// Mặc định (kể cả BS Hoàng - Thượng chưa cấu hình): dùng như cũ
+function contactLines(bs){ return CONTACTS[bs] || CONTACTS["BS Hoàng - Tiến"]; }
 
 // Mẫu theo mặt bệnh — điền sẵn Tình hình + Phương pháp (bác sĩ sửa lại)
 const FORMS = [
@@ -316,12 +323,12 @@ ${esc(TRONGXA)}</div>
           ${qr}
           <div class="body">${esc(se)}</div>
           <div class="sub">${esc(SKIN_CARE)}</div>
-          <div class="sub">👉 Ông/Bà có thể quét <b>mã QR</b> để đọc thêm tài liệu chi tiết theo mặt bệnh.</div>
+          <div class="sub">👉 Bác có thể quét <b>mã QR</b> để đọc thêm tài liệu chi tiết theo mặt bệnh.</div>
         </div>
         <div class="sec warn"><h3>4. Các dấu hiệu cần báo bác sĩ ngay</h3><div class="body">${esc(WARNING)}</div></div>
         <div class="sec"><h3>5. Dinh dưỡng, chăm sóc</h3><div class="body">${esc(CARE_GENERAL)}</div></div>
         <div class="sec"><h3>6. Lịch tái khám trong quá trình xạ trị</h3><div class="body">${esc(RECHECK)}</div></div>
-        <div class="contact"><b>Thông tin liên hệ</b>${esc(CONTACT).split("\n").map(l=>'<div style="margin-top:2px">'+l+'</div>').join("")}<div style="margin-top:5px;font-style:italic">Chúng tôi luôn đồng hành cùng Ông/Bà trong suốt quá trình điều trị.</div></div>
+        <div class="contact"><b>Thông tin liên hệ</b>${contactLines(bs).map(l=>'<div style="margin-top:2px">'+esc(l)+'</div>').join("")}<div style="margin-top:5px;font-style:italic">Chúng tôi luôn đồng hành cùng Bác trong suốt quá trình điều trị.</div></div>
       </td>
     </tr></table><!--/cols-->
 
